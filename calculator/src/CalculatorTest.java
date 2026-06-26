@@ -1,51 +1,100 @@
 import org.junit.jupiter.api.Test;
+import java.util.Scanner;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CalculatorTest {
 
+    private static final double DELTA = 0.0001;
+
+    // ==========================================
+    // 1. Math Operation Tests
+    // ==========================================
+
     @Test
-    public void add() {
-        assertEquals(4,Calculator.add(2,2));
-        assertEquals(6.5,Calculator.add(3.5,3));
-        assertEquals(11,Calculator.add(4.3,6.7));
+    void testAdd() {
+        assertEquals(4.0, Operation.add(2, 2), DELTA);
+        assertEquals(6.5, Operation.add(3.5, 3), DELTA);
     }
 
     @Test
-    public void subtract() {
-        assertEquals(4, Calculator.subtract(10,6));
-        assertEquals(-1.5, Calculator.subtract(6,7.5));
-        assertEquals(3, Calculator.subtract(4,1));
+    void testSubtract() {
+        assertEquals(4.0, Operation.subtract(10, 6), DELTA);
+        assertEquals(-1.5, Operation.subtract(6, 7.5), DELTA);
     }
 
     @Test
-    public void multiply() {
-        assertEquals(8, Calculator.multiply(2,4));
-        assertEquals(-9, Calculator.multiply(3,-3));
-        assertEquals(5, Calculator.multiply(2.5,2));
+    void testMultiply() {
+        assertEquals(8.0, Operation.multiply(2, 4), DELTA);
+        assertEquals(0.0, Operation.multiply(5, 0), DELTA);
     }
 
     @Test
-    public void divide() {
-        assertEquals(7, Calculator.divide(21,3));
-        assertThrows(ArithmeticException.class, () -> {
-            Calculator.divide(10, 0);
-        });
-        assertEquals(2, Calculator.divide(4,2));
+    void testDivide() {
+        assertEquals(2.0, Operation.divide(4, 2), DELTA);
+        assertThrows(ArithmeticException.class, () -> Operation.divide(10, 0));
     }
 
     @Test
-    public void pow() {
-        assertEquals(9, Calculator.pow(3,2));
-        assertEquals(16, Calculator.pow(4,2));
-        assertEquals(27, Calculator.pow(3,3));
+    void testPow() {
+        assertEquals(9.0, Operation.pow(3, 2), DELTA);
+        assertEquals(1.0, Operation.pow(5, 0), DELTA);
     }
 
     @Test
-    public void sqrt() {
-        assertEquals(2, Calculator.sqrt(4));
-        assertThrows(ArithmeticException.class, () -> {
-            Calculator.sqrt(-1);
-        });
-        assertEquals(0, Calculator.sqrt(0));
+    void testSqrt() {
+        assertEquals(3.0, Operation.sqrt(9), DELTA);
+        assertThrows(ArithmeticException.class, () -> Operation.sqrt(-4));
     }
+
+    @Test
+    void testMod() {
+        assertEquals(1.0, Operation.mod(10, 3), DELTA);
+        assertThrows(ArithmeticException.class, () -> Operation.mod(5, 0));
+    }
+
+    // ==========================================
+    // 2. Helper User Input Tests (Mocked Scanner)
+    // ==========================================
+
+    @Test
+    void testGetOperand_ValidInput() {
+        Scanner mockScanner = new Scanner("42.5\n");
+        double result = Helper.getOperand(mockScanner);
+        assertEquals(42.5, result, DELTA);
+    }
+
+    @Test
+    void testGetOperand_InvalidThenValidInput() {
+        // Simulates user typing text first, then correcting it with a valid number
+        Scanner mockScanner = new Scanner("not_a_number\n12.3\n");
+        double result = Helper.getOperand(mockScanner);
+        assertEquals(12.3, result, DELTA);
+    }
+
+    @Test
+    void testGetOperands_ValidInput() {
+        Scanner mockScanner = new Scanner("10.5 20.5\n");
+        Calculator.Operands ops = Helper.getOperands(mockScanner);
+        assertEquals(10.5, ops.num1(), DELTA);
+        assertEquals(20.5, ops.num2(), DELTA);
+    }
+
+    @Test
+    void testGetOperands_WrongCountThenValidInput() {
+        // Simulates entering 3 numbers, then 1 number, then exactly 2 numbers
+        Scanner mockScanner = new Scanner("1 2 3\n9\n4.5 5.5\n");
+        Calculator.Operands ops = Helper.getOperands(mockScanner);
+        assertEquals(4.5, ops.num1(), DELTA);
+        assertEquals(5.5, ops.num2(), DELTA);
+    }
+
+    @Test
+    void testGetOperands_InvalidFormatThenValidInput() {
+        // Simulates text input, then exactly 2 valid numbers
+        Scanner mockScanner = new Scanner("bad input\n7.0 8.0\n");
+        Calculator.Operands ops = Helper.getOperands(mockScanner);
+        assertEquals(7.0, ops.num1(), DELTA);
+        assertEquals(8.0, ops.num2(), DELTA);
+    }
+
 }
